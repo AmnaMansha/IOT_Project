@@ -27,7 +27,7 @@ public class WaterLevelService {
 
     public WaterLevel getCurrentWaterLevel() {
         return waterLevelRepository.findTopByOrderByTimestampDesc()
-            .orElseThrow(() -> new ResourceNotFoundException("WaterLevel", "current", ""));
+            .orElseThrow(() -> new ResourceNotFoundException("WaterLevel current not available"));
     }
 
     public List<WaterLevel> getAllWaterLevels() {

@@ -18,7 +18,7 @@ public class Alert {
     @Column(nullable = false)
     private Boolean isResolved = false;
     private LocalDateTime timestamp;
-
+    private String currentValue;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -26,6 +26,13 @@ public class Alert {
     @PrePersist
     protected void onCreate() {
         timestamp = LocalDateTime.now();
+    }
+    public String getCurrentValue() {
+        return currentValue;
+    }
+
+    public void setCurrentValue(String currentValue) {
+        this.currentValue = currentValue;
     }
 }
 

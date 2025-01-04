@@ -3,10 +3,11 @@ package org.example.backend.dto;
 import org.example.backend.model.User;
 
 public class LoginResponse {
-    private String status;
-    private String message;
-    private UserData data;
+    private String status; // "success" or "error"
+    private String message; // Descriptive message
+    private UserData data; // User data (only for success responses)
 
+    // Inner class for user data
     public static class UserData {
         private Long id;
         private String name;
@@ -27,19 +28,24 @@ public class LoginResponse {
         public String getRole() { return role; }
     }
 
-    // Constructors
-    public static LoginResponse success(User user) {
+    // Private constructor to enforce usage of factory methods
+    private LoginResponse() {}
+
+    // Factory method for success response
+    public static LoginResponse success(String message, User user) {
         LoginResponse response = new LoginResponse();
         response.status = "success";
-        response.message = "Login successful";
+        response.message = message;
         response.data = new UserData(user.getId(), user.getName(), user.getEmail(), user.getRole().name());
         return response;
     }
 
+    // Factory method for error response
     public static LoginResponse error(String message) {
         LoginResponse response = new LoginResponse();
         response.status = "error";
         response.message = message;
+        response.data = null; // No data for error responses
         return response;
     }
 

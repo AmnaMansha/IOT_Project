@@ -1,6 +1,9 @@
 package org.example.backend.controller;
 
+import org.example.backend.dto.RegisterResponse;
+import org.example.backend.exception.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.example.backend.service.UserService;
@@ -28,23 +31,35 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+
     @PostMapping("/register")
-    public ResponseEntity<?> register(
-        @RequestParam String name,
-        @RequestParam String email,
-        @RequestParam String password,
-        @RequestParam(required = false, defaultValue = "USER") Role role
-    ) {
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
         try {
-            User user = userService.register(name, email, password, role);
-            return ResponseEntity.ok(new LoginResponse.UserData(
-                user.getId(), 
-                user.getName(), 
-                user.getEmail(), 
-                user.getRole().name()
-            ));
+            // Check if email or password is missing
+            if (registerRequest.getEmail() == null || registerRequest.getEmail().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(RegisterResponse.error("Email is required"));
+            }
+            if (registerRequest.getPassword() == null || registerRequest.getPassword().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(RegisterResponse.error("Password is required"));
+            }
+
+            // Check if email is already taken
+            if (userService.existsByEmail(registerRequest.getEmail())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(RegisterResponse.error("Email is already taken"));
+            }
+
+            // Register the user
+            User user = userService.register(registerRequest);
+
+            // Return success response
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(RegisterResponse.success("User registered successfully", user));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(LoginResponse.error(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(RegisterResponse.error("Error during registration: " + e.getMessage()));
         }
     }
 
@@ -62,32 +77,45 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            // First, check if user exists
+            // Check if email or password is missing
+            if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(LoginResponse.error("Email is required"));
+            }
+            if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(LoginResponse.error("Password is required"));
+            }
+
+            // Check if user exists
             User user = userService.findByEmail(loginRequest.getEmail());
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(LoginResponse.error("User not found"));
+                        .body(LoginResponse.error("User not found"));
             }
 
+            // Authenticate the user
             Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    loginRequest.getEmail(), 
-                    loginRequest.getPassword()
-                )
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getPassword()
+                    )
             );
 
+            // Check if authentication is successful
             if (authentication.isAuthenticated()) {
-                return ResponseEntity.ok(LoginResponse.success(user));
+                return ResponseEntity.ok(LoginResponse.success("User Loggedin Successfully",user));
             }
-            
+
+            // If authentication fails
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(LoginResponse.error("Invalid credentials"));
+                    .body(LoginResponse.error("Invalid credentials"));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(LoginResponse.error("Authentication failed: " + e.getMessage()));
+                    .body(LoginResponse.error("Authentication failed: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(LoginResponse.error("Error during login: " + e.getMessage()));
+                    .body(LoginResponse.error("Error during login: " + e.getMessage()));
         }
     }
 
@@ -100,4 +128,23 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
     }
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')") // Only admins can delete users
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        try {
+            boolean isDeleted = userService.deleteUser(id);
+            if (isDeleted) {
+                return ResponseEntity.ok("User deleted successfully.");
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete user.");
+            }
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
+
 }
+
+}
+

@@ -37,4 +37,12 @@ public class Temperature {
     public void setTemperature(Double temperature) {
         this.temperature = temperature;
     }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
 }
