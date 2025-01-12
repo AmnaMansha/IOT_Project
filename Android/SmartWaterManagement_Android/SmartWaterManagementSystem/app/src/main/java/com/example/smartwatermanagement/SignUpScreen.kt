@@ -44,7 +44,7 @@ import retrofit2.create
 
 class SignUpScreen : ComponentActivity() {
 
-    private val BASE_URL = "http://192.168.43.241:8080"
+    private lateinit var BASE_URL: String
 
 
     // Retrofit API service instance
@@ -58,6 +58,8 @@ class SignUpScreen : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        BASE_URL = getString(R.string.ip_address);
         setContent {
             SmartWaterManagementTheme {
                 val context = LocalContext.current
