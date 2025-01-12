@@ -52,8 +52,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : ComponentActivity() {
+    private lateinit var BASE_URL: String
 
-    private val BASE_URL = "http://192.168.43.241:8080"
 
 
     // Retrofit API service instance
@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        BASE_URL = getString(R.string.ip_address)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
