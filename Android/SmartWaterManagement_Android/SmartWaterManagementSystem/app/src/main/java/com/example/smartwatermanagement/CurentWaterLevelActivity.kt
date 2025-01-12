@@ -43,7 +43,7 @@ import java.util.*
 class CurentWaterLevelActivity : ComponentActivity() {
 
 
-    private val BASE_URL = "http://192.168.43.241:8080"
+    private lateinit var BASE_URL: String
 
 
     val getAllWaterLevelService : ApiService by lazy {
@@ -58,6 +58,7 @@ class CurentWaterLevelActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        BASE_URL = getString(R.string.ip_address)
         setContent {
             val context = LocalContext.current // Access the context for Toast
 
@@ -240,11 +241,12 @@ class CurentWaterLevelActivity : ComponentActivity() {
                         }
 
                         // Normalize water level (0.0 to 1.0)
+                        // Normalize water level (0.0 to 1.0)
                         val normalizedLevel = (waterLevel / 100.0).coerceIn(0.0, 1.0).toFloat()
                         val barWidth = size.width * 0.3f
                         val barHeight = size.height * normalizedLevel
 
-                        // Draw water level bar
+// Draw water level bar
                         drawRect(
                             color = Color(0xFF00283f),
                             topLeft = Offset(
@@ -254,19 +256,22 @@ class CurentWaterLevelActivity : ComponentActivity() {
                             size = Size(barWidth, barHeight)
                         )
 
-                        // Display exact water level
+// Display exact water level (with no rounding)
+// Display exact water level without any rounding
                         drawContext.canvas.nativeCanvas.apply {
+                            // Show value with 2 decimal places
                             drawText(
-                                String.format("%.1f", waterLevel),  // Format to display one decimal place
+                                String.format("%.2f", waterLevel),  // Ensure it prints exactly like 80.58
                                 size.width / 2,
                                 size.height - barHeight - 20.dp.toPx(),
                                 android.graphics.Paint().apply {
-                                    color = android.graphics.Color.parseColor("#00283F") // Replace with your desired color in HEX
+                                    color = android.graphics.Color.parseColor("#00283F")
                                     textSize = 40f
                                     textAlign = android.graphics.Paint.Align.CENTER
                                 }
                             )
                         }
+
                     }
 
                     // Level markers
