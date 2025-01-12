@@ -8,4 +8,5 @@
     <string name="title_activity_current_humidity">CurrentHumidityActivity</string>
     <string name="title_activity_leakage">LeakageActivity</string>
     <string name="title_activity_get_all_water_level">GetAllWaterLevelActivity</string>
+    <string name="ip_address">http://192.168.43.241:8080</string>
 </resources>
