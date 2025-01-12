@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -151,6 +153,11 @@ class CurrentHumidityActivity : ComponentActivity() {
                 backgroundColor = Color.LightGray,
                 progressColor = colorResource(id = R.color.dark_blue),
                 strokeWidth = 17.dp
+            )
+            Image(
+                painter = painterResource(id = R.drawable.humidity_new), // Replace with your actual drawable resource ID
+                contentDescription = "Temperature Icon",
+                modifier = Modifier.size(50.dp) // You can adjust the icon size here
             )
 
             Spacer(modifier = Modifier.height(16.dp))
