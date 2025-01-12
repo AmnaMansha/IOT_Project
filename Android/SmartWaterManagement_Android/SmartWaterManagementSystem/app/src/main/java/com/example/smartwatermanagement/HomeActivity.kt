@@ -40,8 +40,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class HomeActivity : ComponentActivity() {
-    private val BASE_URL = "http://192.168.1.72:8080"
-
+    private lateinit var BASE_URL: String
 
 
     val waterLevelService: ApiService by lazy {
@@ -74,7 +73,7 @@ class HomeActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        BASE_URL = getString(R.string.ip_address)
         setContent {
             val context = LocalContext.current // Access the context for Toast
 
@@ -138,19 +137,17 @@ class HomeActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.spacedBy(16.dp), // Controlled spacing between rows
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 20.dp), // Outer padding for the row
-                        horizontalArrangement = Arrangement.SpaceEvenly, // Ensures even spacing between items
-                        verticalAlignment = Alignment.CenterVertically // Align items vertically in the center
                     ) {
                         Card(
                             shape = RoundedCornerShape(16.dp), // Corner radius
                             elevation = 4.dp, // Shadow for the card
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = 15.dp, end = 15.dp)
+                                .padding(start = 15.dp, end = 15.dp, bottom = 30.dp)
                                 .height(150.dp)
                                 .clickable {
                                     CoroutineScope(Dispatchers.IO).launch {
@@ -165,37 +162,17 @@ class HomeActivity : ComponentActivity() {
                                                 authHeader = authHeader
                                             )
                                             withContext(Dispatchers.Main) {
-                                               if(response.isSuccessful){
-                                                   if (response.body()?.status == "NORMAL") {
-
-                                                       val intent = Intent(context, CurentWaterLevelActivity::class.java
-                                                       )
-                                                       intent.putExtra("level", response.body()?.level)
-                                                       context.startActivity(intent)
-
-
-                                                       // You can navigate to another screen or process user data here
-                                                   }
-                                                   else if(response.body()?.status == "HIGH"){
-                                                       val intent = Intent(context, CurentWaterLevelActivity::class.java
-                                                       )
-                                                       intent.putExtra("level", response.body()?.level)
-                                                       context.startActivity(intent)
-                                                   }
-                                                   else if(response.body()?.status == "LOW"){
-                                                       val intent = Intent(context, CurentWaterLevelActivity::class.java
-                                                       )
-                                                       intent.putExtra("level", response.body()?.level)
-                                                       context.startActivity(intent)
-                                                   }
-                                                   else{
-                                                       Toast.makeText(context, "No Water Levels found for this user id", Toast.LENGTH_SHORT).show()
-
-                                                   }
-                                               }else{
-                                                   Toast.makeText(context, "Water Level Failed: ${response.code()}", Toast.LENGTH_SHORT).show()
-
-                                               }
+                                                if(response.isSuccessful){
+                                                    if (response.body()?.status == "NORMAL" || response.body()?.status == "HIGH" || response.body()?.status == "LOW") {
+                                                        val intent = Intent(context, CurentWaterLevelActivity::class.java)
+                                                        intent.putExtra("level", response.body()?.level)
+                                                        context.startActivity(intent)
+                                                    } else {
+                                                        Toast.makeText(context, "No Water Levels found for this user id", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                } else {
+                                                    Toast.makeText(context, "Water Level Failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                                                }
                                             }
                                         } catch (e: Exception) {
                                             withContext(Dispatchers.Main) {
@@ -210,40 +187,46 @@ class HomeActivity : ComponentActivity() {
                                             }
                                         }
                                     }
-
                                 }
                         ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        start = 30.dp,
-                                        end = 30.dp,
-                                        top = 30.dp,
-                                        bottom = 30.dp
-                                    ) ,
+                                    .padding(start = 30.dp, end = 30.dp, top = 30.dp, bottom = 30.dp),
                                 contentAlignment = Alignment.Center // Center the content within the box
-// Inner padding for content
                             ) {
-                                Text(
-                                    text = "Water Level",
-                                    style = TextStyle(
-                                        color = colorResource(id = R.color.dark_blue),
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center
-                                    ),
-                                    modifier = Modifier.fillMaxWidth() // Center text horizontally
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically, // Align the icon and text vertically
+                                    horizontalArrangement = Arrangement.Center, // Center the content horizontally
+                                    modifier = Modifier.fillMaxWidth() // Take full width of the box
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.water_level_new), // Replace with your icon resource
+                                        contentDescription = "Water Level Icon",
+                                        modifier = Modifier.size(54.dp), // Adjust the size of the icon
+                                        tint = colorResource(id = R.color.dark_blue) // Optional: set the color of the icon
+                                    )
+                                    Spacer(modifier = Modifier.width(30.dp)) // Space between the icon and the text
+                                    Text(
+                                        text = "Water Level",
+                                        style = TextStyle(
+                                            color = colorResource(id = R.color.dark_blue),
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    )
+                                }
                             }
                         }
+
 
                         Card(
                             shape = RoundedCornerShape(16.dp),
                             elevation = 4.dp,
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = 15.dp, end = 15.dp)
+                                .padding(start = 15.dp, end = 15.dp, bottom = 30.dp)
                                 .height(150.dp)
                                 .clickable {
 
@@ -301,42 +284,40 @@ class HomeActivity : ComponentActivity() {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        start = 30.dp,
-                                        end = 30.dp,
-                                        top = 30.dp,
-                                        bottom = 30.dp
-                                    ),
+                                    .padding(start = 30.dp, end = 30.dp, top = 30.dp, bottom = 30.dp),
                                 contentAlignment = Alignment.Center // Center the content within the box
-// Inner padding for content
                             ) {
-                                Text(
-                                    text = "Temperature",
-                                    style = TextStyle(
-                                        color = colorResource(id = R.color.dark_blue),
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically, // Align the icon and text vertically
+                                    horizontalArrangement = Arrangement.Center, // Center the content horizontally
+                                    modifier = Modifier.fillMaxWidth() // Take full width of the box
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.thermometer_new), // Replace with your icon resource
+                                        contentDescription = "Temperature Level Icon",
+                                        modifier = Modifier.size(54.dp), // Adjust the size of the icon
+                                        tint = colorResource(id = R.color.dark_blue) // Optional: set the color of the icon
+                                    )
+                                    Spacer(modifier = Modifier.width(30.dp)) // Space between the icon and the text
+                                    Text(
+                                        text = "Temperature",
+                                        style = TextStyle(
+                                            color = colorResource(id = R.color.dark_blue),
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    )
+                                }
                             }
                         }
-                    }
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 20.dp), // Outer padding for the row
-                        horizontalArrangement = Arrangement.SpaceEvenly, // Ensures even spacing between items
-                        verticalAlignment = Alignment.CenterVertically // Align items vertically in the center
-                    ) {
                         Card(
                             shape = RoundedCornerShape(16.dp), // Corner radius
                             elevation = 4.dp, // Shadow for the card
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = 15.dp, end = 15.dp)
+                                .padding(start = 15.dp, end = 15.dp, bottom = 30.dp)
                                 .height(150.dp)
                                 .clickable {
                                     CoroutineScope(Dispatchers.IO).launch {
@@ -392,25 +373,31 @@ class HomeActivity : ComponentActivity() {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        start = 30.dp,
-                                        end = 30.dp,
-                                        top = 30.dp,
-                                        bottom = 30.dp
-                                    ) ,
+                                    .padding(start = 30.dp, end = 30.dp, top = 30.dp, bottom = 30.dp),
                                 contentAlignment = Alignment.Center // Center the content within the box
-// Inner padding for content
                             ) {
-                                Text(
-                                    text = "Humidity",
-                                    style = TextStyle(
-                                        color = colorResource(id = R.color.dark_blue),
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center
-                                    ),
-                                    modifier = Modifier.fillMaxWidth() // Center text horizontally
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically, // Align the icon and text vertically
+                                    horizontalArrangement = Arrangement.Center, // Center the content horizontally
+                                    modifier = Modifier.fillMaxWidth() // Take full width of the box
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.humidity_new), // Replace with your icon resource
+                                        contentDescription = "Humidity Level Icon",
+                                        modifier = Modifier.size(54.dp), // Adjust the size of the icon
+                                        tint = colorResource(id = R.color.dark_blue) // Optional: set the color of the icon
+                                    )
+                                    Spacer(modifier = Modifier.width(30.dp)) // Space between the icon and the text
+                                    Text(
+                                        text = "Humidity",
+                                        style = TextStyle(
+                                            color = colorResource(id = R.color.dark_blue),
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    )
+                                }
                             }
                         }
 
@@ -419,7 +406,7 @@ class HomeActivity : ComponentActivity() {
                             elevation = 4.dp,
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = 15.dp, end = 15.dp)
+                                .padding(start = 15.dp, end = 15.dp, bottom = 30.dp)
                                 .height(150.dp).clickable{
                                     CoroutineScope(Dispatchers.IO).launch {
                                         try {
@@ -444,10 +431,10 @@ class HomeActivity : ComponentActivity() {
 
                                                         val humidityValue = lastHumidity.humidity
                                                         val message: String
-                                                       if (humidityValue > 60) {
+                                                        if (humidityValue > 60) {
                                                             message = "Warning: Possible water leakage detected!"
                                                         } else {
-                                                           message =  "Humidity is normal, no leakage detected."
+                                                            message =  "Humidity is normal, no leakage detected."
                                                         }
 
                                                         // Proceed with your intent and pass the message
@@ -488,19 +475,32 @@ class HomeActivity : ComponentActivity() {
                                 contentAlignment = Alignment.Center // Center the content within the box
 // Inner padding for content
                             ) {
-                                Text(
-                                    text = "Leakage",
-                                    style = TextStyle(
-                                        color = colorResource(id = R.color.dark_blue),
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically, // Align the icon and text vertically
+                                    horizontalArrangement = Arrangement.Center, // Center the content horizontally
+                                    modifier = Modifier.fillMaxWidth() // Take full width of the box
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.leakage_new), // Replace with your icon resource
+                                        contentDescription = "Check Leakage",
+                                        modifier = Modifier.size(54.dp), // Adjust the size of the icon
+                                        tint = colorResource(id = R.color.dark_blue) // Optional: set the color of the icon
+                                    )
+                                    Spacer(modifier = Modifier.width(22.dp)) // Space between the icon and the text
+                                    Text(
+                                        text = "Check Leakage",
+                                        style = TextStyle(
+                                            color = colorResource(id = R.color.dark_blue),
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
+
 
 
 
