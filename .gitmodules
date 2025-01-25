@@ -1,0 +1,3 @@
+[submodule "smart water management system Backend"]
+	path = smart water management system Backend
+	url = https://github.com/AmnaMansha/Smart_Water_Management_Backend.git
